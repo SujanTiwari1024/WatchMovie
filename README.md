@@ -1,56 +1,78 @@
-# Welcome to your Expo app 👋
+# WatchMovie
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A cross-platform (Android + iOS) movie and series discovery app built with React Native and Expo. It helps you decide **what to watch right now**: recommendations and "where to watch" are limited to the streaming services you actually have, in your own region (Finland by default).
 
-## Get started
+Built as the product of a bachelor's thesis at Haaga-Helia University of Applied Sciences (2026).
 
-1. Install dependencies
+## Features
+
+- **Home**: a random trending title, personal recommendations, trending titles, your favorites, and the top titles on each of your services
+- **Movies / Series**: browse by genre, sort by popularity, release date or rating, and filter to "My services" only
+- **Search**: find any movie or series
+- **Title details**: trailer, rating, description, cast, add to favorites, mark as watched, share
+- **Where to watch**: which services stream the title in your region, with your own services first; **Watch Now** opens the streaming app
+- **Favorites and Watched** lists, saved on the device
+- **Profile**: choose your streaming services and region (Finland, Sweden, United States)
+
+## How recommendations work
+
+Recommendations are content-based (no machine learning):
+
+1. Your 3 most common genres are taken from your favorites and watched titles.
+2. TMDB is asked for popular movies and series in those genres that stream on **your services in your region**.
+3. The results are ranked by how similar their genres are to your saved titles, plus their rating. Titles you've already saved are left out.
+
+## Tech stack
+
+- [React Native](https://reactnative.dev/) + [Expo](https://expo.dev/) (SDK 57) with [Expo Router](https://docs.expo.dev/router/introduction/)
+- TypeScript
+- [TanStack Query](https://tanstack.com/query) + [Axios](https://axios-http.com/) for API calls and caching
+- [AsyncStorage](https://react-native-async-storage.github.io/async-storage/) for data saved on the device
+- [TMDB API](https://developer.themoviedb.org/) for titles, images and streaming availability
+
+## Getting started
+
+1. Install dependencies:
 
    ```bash
    npm install
    ```
 
-2. Start the app
+2. Get a free TMDB **API Read Access Token** at <https://www.themoviedb.org/settings/api>.
+
+3. Copy `.env.example` to `.env` and paste your token:
+
+   ```
+   EXPO_PUBLIC_TMDB_READ_TOKEN=your_token_here
+   ```
+
+4. Start the app and scan the QR code with Expo Go on your phone:
 
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+## Project structure
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```
+src/app/        Screens (Expo Router: each file is a screen)
+  (login)/        Login screen (start screen)
+  (tabs)/         Home, Movies, Series, Favorites, Watched tabs
+  details/[id]    Title details and where to watch
+  profile, search, signup
+components/     Reusable UI pieces (cards, rows, header, ...)
+api/            TMDB requests and data types
+hooks/          Data-fetching hooks (TanStack Query)
+context/        User data saved on the device (favorites, services, region)
+utils/          Recommendation and streaming-link logic
+constants/      Colors, images, streaming services
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Notes
 
-### Other setup steps
+- Login and sign-up are placeholders for now: any input opens the app. Real authentication is planned.
+- Watch Now opens the service's search for the title. If the service's app is installed, the phone opens the app; otherwise it opens the website.
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+## Attribution
 
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+This product uses the TMDB API but is not endorsed or certified by TMDB. Streaming availability data is provided by JustWatch.

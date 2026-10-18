@@ -1,18 +1,35 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useColorScheme } from 'react-native';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import React from "react";
+import Colors from "../../constants/colors";
+import { UserDataProvider } from "../../context/UserDataContext";
 
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: { retry: 1, gcTime: 24 * 60 * 60 * 1000 },
+  },
+});
 
-SplashScreen.preventAutoHideAsync();
-
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+export default function RootLayout() {
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      <AppTabs />
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <UserDataProvider>
+        <StatusBar style="dark" />
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: Colors.background },
+          }}
+        >
+          <Stack.Screen name="(login)/index" />
+          <Stack.Screen name="signup" />
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="details/[id]" />
+          <Stack.Screen name="profile" />
+          <Stack.Screen name="search" options={{ animation: "fade" }} />
+        </Stack>
+      </UserDataProvider>
+    </QueryClientProvider>
   );
 }
