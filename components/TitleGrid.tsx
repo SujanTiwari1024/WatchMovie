@@ -57,7 +57,7 @@ const TitleGrid = ({
       ListFooterComponent={
         loadingMore ? (
           <ActivityIndicator color={Colors.primary} style={{ margin: 20 }} />
-        ) : null
+        ) : undefined
       }
       onEndReached={onEndReached}
       onEndReachedThreshold={0.6}

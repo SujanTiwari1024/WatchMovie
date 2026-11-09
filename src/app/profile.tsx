@@ -1,6 +1,6 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useState } from "react";
 import { Image } from "expo-image";
 import {
   ScrollView,
@@ -10,7 +10,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import AppButton from "../../components/AppButton";
+import AppTextInput from "../../components/AppTextInput";
 import Colors from "../../constants/colors";
 import { profilePhoto } from "../../constants/images";
 import { imageUrl } from "../../api/tmdb";
@@ -27,7 +27,15 @@ const ProfileScreen = () => {
     watched,
     setRegion,
     toggleService,
+    setUsername,
   } = useUserData();
+  const [nameDraft, setNameDraft] = useState(username);
+
+  const saveName = () => {
+    const name = nameDraft.trim();
+    if (name) setUsername(name);
+    else setNameDraft(username);
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -71,6 +79,20 @@ const ProfileScreen = () => {
             <Text style={styles.statLabel}>Services</Text>
           </View>
         </View>
+
+        <Text style={styles.sectionTitle}>Your name</Text>
+        <Text style={styles.hint}>
+          Shown in the greeting at the top of the app.
+        </Text>
+        <AppTextInput
+          placeholder="Your name"
+          placeholderTextColor={Colors.gray}
+          value={nameDraft}
+          onChangeText={setNameDraft}
+          onEndEditing={saveName}
+          returnKeyType="done"
+          maxLength={20}
+        />
 
         <Text style={styles.sectionTitle}>My streaming services</Text>
         <Text style={styles.hint}>
@@ -125,19 +147,6 @@ const ProfileScreen = () => {
           ))}
         </View>
 
-        <AppButton
-          title="Log out"
-          icon={
-            <Ionicons name="log-out-outline" size={16} color={Colors.text} />
-          }
-          style={{
-            width: "100%",
-            marginTop: 30,
-            marginRight: 0,
-            borderColor: "red",
-          }}
-          onPress={() => router.replace("/(login)")}
-        />
         <Text style={styles.attribution}>
           This product uses the TMDB API but is not endorsed or certified by
           TMDB. Streaming availability data by JustWatch.
@@ -261,7 +270,7 @@ const styles = StyleSheet.create({
     color: Colors.gray,
     fontSize: 11,
     textAlign: "center",
-    marginTop: 20,
+    marginTop: 30,
   },
   regionActive: {
     backgroundColor: Colors.primary,

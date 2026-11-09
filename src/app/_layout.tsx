@@ -22,8 +22,6 @@ export default function RootLayout() {
             contentStyle: { backgroundColor: Colors.background },
           }}
         >
-          <Stack.Screen name="(login)/index" />
-          <Stack.Screen name="signup" />
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="details/[id]" />
           <Stack.Screen name="profile" />

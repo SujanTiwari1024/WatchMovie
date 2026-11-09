@@ -44,3 +44,9 @@ example
 
 # secrets
 .env
+
+# Local docs and AI tool config
+README.md
+CLAUDE.md
+AGENTS.md
+.claude/
