@@ -46,7 +46,7 @@ export const providers: Record<ProviderId, Provider> = {
   },
   appletv: {
     id: "appletv",
-    name: "Apple TV+",
+    name: "Apple TV",
     color: "#999999",
     tmdbIds: [350],
     logoPath: "/9icYBfYFcwgCbky5VdGUIKJ4C5i.png",

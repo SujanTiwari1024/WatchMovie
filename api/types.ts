@@ -20,7 +20,7 @@ export interface WatchProviderEntry {
   logo_path: string;
 }
 
-interface RegionWatchProviders {
+export interface RegionWatchProviders {
   link?: string;
   flatrate?: WatchProviderEntry[];
   free?: WatchProviderEntry[];

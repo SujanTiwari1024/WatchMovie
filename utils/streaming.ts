@@ -1,6 +1,7 @@
 import { Alert, Linking } from "react-native";
 import { imageUrl } from "../api/tmdb";
-import { TitleDetails, WatchProviderEntry } from "../api/types";
+import { TitleDetails } from "../api/types";
+import { streamingEntries } from "./filtering";
 import {
   providerForTmdbId,
   providersInRegion,
@@ -24,11 +25,7 @@ export const getWatchOptions = (
   myServices: ProviderId[],
 ) => {
   const regionData = title.watchProviders[region] ?? {};
-  const streaming: WatchProviderEntry[] = [
-    ...(regionData.flatrate ?? []),
-    ...(regionData.free ?? []),
-    ...(regionData.ads ?? []),
-  ];
+  const streaming = streamingEntries(regionData);
   const availableTmdbIds = new Set(streaming.map((p) => p.provider_id));
 
   const mine: ProviderOption[] = providersInRegion(region)

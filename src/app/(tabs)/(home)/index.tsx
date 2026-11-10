@@ -71,14 +71,18 @@ const HomeScreen = () => {
           heading="Recommendation"
           subheading={
             favorites.length + watched.length > 0
-              ? "Based on your taste, ready to stream on your services"
-              : "Popular on your services. Add favorites to personalise this"
+              ? "Suggested by TMDB, ready to stream on your services"
+              : "Popular on your services. Add to your watchlist to personalise this"
           }
           data={recommended.data}
           loading={recommended.isPending}
           error={recommended.error}
           onRetry={recommended.refetch}
-          emptyText="Nothing matching on your services right now."
+          emptyText={
+            regionalServices.length === 0
+              ? "Add your streaming services in your profile to get suggestions."
+              : "Nothing matching on your services right now."
+          }
           cardWidth={160}
         />
         <MovieRow
@@ -88,7 +92,7 @@ const HomeScreen = () => {
           error={trending.error}
           onRetry={trending.refetch}
         />
-        <MovieRow heading="Favorites" data={favorites} />
+        <MovieRow heading="Watchlist" data={favorites} />
         {regionalServices.map((id) => (
           <ProviderTopRow key={id} id={id} />
         ))}

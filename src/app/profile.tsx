@@ -11,10 +11,11 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AppTextInput from "../../components/AppTextInput";
+import RegionChips from "../../components/RegionChips";
 import Colors from "../../constants/colors";
 import { profilePhoto } from "../../constants/images";
 import { imageUrl } from "../../api/tmdb";
-import { providersInRegion, regions } from "../../constants/providers";
+import { providersInRegion } from "../../constants/providers";
 import { useUserData } from "../../context/UserDataContext";
 
 const ProfileScreen = () => {
@@ -25,7 +26,6 @@ const ProfileScreen = () => {
     myServices,
     favorites,
     watched,
-    setRegion,
     toggleService,
     setUsername,
   } = useUserData();
@@ -59,7 +59,7 @@ const ProfileScreen = () => {
             onPress={() => router.push("/(tabs)/favorites")}
           >
             <Text style={styles.statValue}>{favorites.length}</Text>
-            <Text style={styles.statLabel}>Favorites</Text>
+            <Text style={styles.statLabel}>Watchlist</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.stat}
@@ -128,28 +128,11 @@ const ProfileScreen = () => {
         <Text style={styles.hint}>
           Streaming availability differs between countries.
         </Text>
-        <View style={styles.regions}>
-          {regions.map((r) => (
-            <TouchableOpacity
-              key={r.code}
-              onPress={() => setRegion(r.code)}
-              style={[styles.region, region === r.code && styles.regionActive]}
-            >
-              <Text
-                style={{
-                  color: region === r.code ? Colors.white : Colors.text,
-                  fontWeight: "500",
-                }}
-              >
-                {r.name}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+        <RegionChips />
 
         <Text style={styles.attribution}>
           This product uses the TMDB API but is not endorsed or certified by
-          TMDB. Streaming availability data by JustWatch.
+          TMDB. Streaming availability data provided by JustWatch.
         </Text>
       </ScrollView>
     </SafeAreaView>
@@ -253,27 +236,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "500",
   },
-  regions: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-  },
-  region: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: Colors.darkBorder,
-    backgroundColor: Colors.surface,
-  },
   attribution: {
     color: Colors.gray,
     fontSize: 11,
     textAlign: "center",
     marginTop: 30,
-  },
-  regionActive: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
   },
 });

@@ -1,5 +1,13 @@
 import axios from "axios";
-import { Genre, MediaType, Page, TitleDetails, TitleSummary } from "./types";
+import { mergeUniqueTitles } from "../utils/filtering";
+import {
+  Genre,
+  MediaType,
+  Page,
+  RegionWatchProviders,
+  TitleDetails,
+  TitleSummary,
+} from "./types";
 
 const IMAGE_BASE = "https://image.tmdb.org/t/p";
 
@@ -70,7 +78,6 @@ export interface DiscoverParams {
   region: string;
   page?: number;
   genreIds?: number[];
-  genreMatch?: "all" | "any";
   providerIds?: number[];
   sort?: "popular" | "newest" | "rating";
 }
@@ -80,7 +87,6 @@ export const fetchDiscover = async ({
   region,
   page = 1,
   genreIds = [],
-  genreMatch = "all",
   providerIds = [],
   sort = "popular",
 }: DiscoverParams) => {
@@ -102,7 +108,7 @@ export const fetchDiscover = async ({
   };
 
   if (genreIds.length > 0) {
-    params.with_genres = genreIds.join(genreMatch === "all" ? "," : "|");
+    params.with_genres = genreIds.join(",");
   }
   if (providerIds.length > 0) {
     params.with_watch_providers = providerIds.join("|");
@@ -118,6 +124,25 @@ export const fetchSearch = async (query: string) => {
     params: { query, include_adult: false },
   });
   return toPage(data).results;
+};
+
+export const fetchRelated = async (mediaType: MediaType, id: number) => {
+  const [recommendations, similar] = await Promise.all([
+    tmdb.get(`/${mediaType}/${id}/recommendations`),
+    tmdb.get(`/${mediaType}/${id}/similar`),
+  ]);
+  return mergeUniqueTitles(
+    toPage(recommendations.data, mediaType).results,
+    toPage(similar.data, mediaType).results,
+  );
+};
+
+export const fetchWatchProviders = async (
+  mediaType: MediaType,
+  id: number,
+): Promise<Record<string, RegionWatchProviders>> => {
+  const { data } = await tmdb.get(`/${mediaType}/${id}/watch/providers`);
+  return data.results ?? {};
 };
 
 const formatRuntime = (raw: any, mediaType: MediaType) => {
@@ -157,6 +182,8 @@ export const fetchDetails = async (key: string): Promise<TitleDetails> => {
 
 export const errorMessage = (error: unknown) => {
   if (axios.isAxiosError(error)) {
+    if (error.code === "ECONNABORTED")
+      return "The request took too long. Check your network and try again.";
     if (!error.response)
       return "No internet connection. Check your network and try again.";
     if (error.response.status === 401)

@@ -40,9 +40,9 @@ const tabs: {
   { name: "series", label: "Series", icon: "tv-outline", activeIcon: "tv" },
   {
     name: "favorites",
-    label: "Favorites",
-    icon: "heart-outline",
-    activeIcon: "heart",
+    label: "Watchlist",
+    icon: "bookmark-outline",
+    activeIcon: "bookmark",
   },
   {
     name: "watched",

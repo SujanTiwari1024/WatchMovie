@@ -4,21 +4,23 @@ import {
   fetchDetails,
   fetchDiscover,
   fetchGenres,
+  fetchRelated,
   fetchSearch,
   fetchTrending,
+  fetchWatchProviders,
 } from "../api/tmdb";
 import { Genre, MediaType, TitleSummary } from "../api/types";
 import { RegionCode } from "../constants/providers";
 import {
-  canonicalGenres,
-  genresFor,
+  excludeTitles,
+  isStreamingOn,
   mergeByPopularity,
-  rankBySimilarity,
-  rankByTaste,
-  tasteGenres,
-} from "../utils/recommend";
+  mergeUniqueTitles,
+} from "../utils/filtering";
 
 const HOUR = 60 * 60 * 1000;
+const MAX_AVAILABILITY_CHECKS = 20;
+const MAX_WATCHLIST_SOURCES = 3;
 
 export const useGenres = (mediaType: MediaType) =>
   useQuery({
@@ -51,20 +53,34 @@ export const useDiscover = (params: Omit<DiscoverParams, "page">) =>
     staleTime: HOUR,
   });
 
-const discoverBoth = async (
-  params: Omit<DiscoverParams, "mediaType">,
-  canonical: number[] = [],
-) => {
+const discoverBoth = async (params: Omit<DiscoverParams, "mediaType">) => {
   const [movies, series] = await Promise.all(
     (["movie", "tv"] as MediaType[]).map((mediaType) =>
-      fetchDiscover({
-        ...params,
-        mediaType,
-        genreIds: genresFor(mediaType, canonical),
-      }),
+      fetchDiscover({ ...params, mediaType }),
     ),
   );
   return mergeByPopularity(movies.results, series.results);
+};
+
+const splitByServices = async (
+  titles: TitleSummary[],
+  region: RegionCode,
+  providerIds: number[],
+) => {
+  const candidates = titles.slice(0, MAX_AVAILABILITY_CHECKS);
+  const available = await Promise.all(
+    candidates.map((title) =>
+      providerIds.length === 0
+        ? false
+        : fetchWatchProviders(title.mediaType, title.id)
+            .then((results) => isStreamingOn(results[region], providerIds))
+            .catch(() => false),
+    ),
+  );
+  return {
+    onMyServices: candidates.filter((_, index) => available[index]),
+    others: candidates.filter((_, index) => !available[index]),
+  };
 };
 
 export const useProviderTop = (providerIds: number[], region: RegionCode) =>
@@ -85,21 +101,27 @@ export const useRecommendations = ({
   region,
   providerIds,
 }: RecommendationInput) => {
-  const genres = tasteGenres(taste);
+  const sources = mergeUniqueTitles(taste).slice(0, MAX_WATCHLIST_SOURCES);
   return useQuery({
     queryKey: [
       "recommendations",
-      genres,
+      sources.map((title) => title.key),
       region,
       providerIds,
-      taste.map((t) => t.key),
     ],
     queryFn: async () => {
-      const candidates = await discoverBoth(
-        { region, providerIds, genreMatch: "any" },
-        genres,
+      if (providerIds.length === 0) return [];
+      const related = await Promise.all(
+        sources.map((title) => fetchRelated(title.mediaType, title.id)),
       );
-      return rankByTaste(candidates, taste).slice(0, 20);
+      const { onMyServices } = await splitByServices(
+        excludeTitles(mergeUniqueTitles(...related), taste),
+        region,
+        providerIds,
+      );
+      if (onMyServices.length > 0) return onMyServices;
+      const popular = await discoverBoth({ region, providerIds });
+      return excludeTitles(popular, taste).slice(0, 20);
     },
     staleTime: HOUR,
   });
@@ -114,14 +136,12 @@ export const useSimilar = (
     queryKey: ["similar", base?.key, region, providerIds],
     enabled: !!base,
     queryFn: async () => {
-      const page = await fetchDiscover({
-        mediaType: base!.mediaType,
+      const related = await fetchRelated(base!.mediaType, base!.id);
+      return splitByServices(
+        excludeTitles(related, [base!]),
         region,
         providerIds,
-        genreIds: genresFor(base!.mediaType, canonicalGenres(base!.genreIds)),
-        genreMatch: "any",
-      });
-      return rankBySimilarity(page.results, base!).slice(0, 12);
+      );
     },
     staleTime: HOUR,
   });

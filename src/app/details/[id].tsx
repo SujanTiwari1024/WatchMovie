@@ -18,6 +18,7 @@ import AppButton from "../../../components/AppButton";
 import AppHeader from "../../../components/AppHeader";
 import MovieRow from "../../../components/MovieRow";
 import ProviderRow from "../../../components/ProviderRow";
+import RegionChips from "../../../components/RegionChips";
 import StatusView from "../../../components/StatusView";
 import Colors from "../../../constants/colors";
 import { regionName, tmdbIdsFor } from "../../../constants/providers";
@@ -87,12 +88,12 @@ const DetailsScreen = () => {
             onPress={() => toggleFavorite(item)}
           >
             <Ionicons
-              name={favorite ? "heart" : "heart-outline"}
+              name={favorite ? "bookmark" : "bookmark-outline"}
               size={16}
-              color={favorite ? "red" : Colors.text}
+              color={favorite ? Colors.primary : Colors.text}
             />
             <Text style={styles.favText}>
-              {favorite ? "Favorited" : "Add to favorites"}
+              {favorite ? "On watchlist" : "Add to watchlist"}
             </Text>
           </TouchableOpacity>
         </View>
@@ -173,9 +174,13 @@ const DetailsScreen = () => {
           <Text style={styles.sectionTitle}>
             Where to watch in {regionName(region)}
           </Text>
+          <View style={styles.regionPicker}>
+            <RegionChips />
+          </View>
           {mine.length === 0 ? (
             <Text style={styles.hint}>
-              You haven't added your streaming services yet.{" "}
+              You haven't added any streaming services for {regionName(region)}{" "}
+              yet.{" "}
               <Text style={styles.link} onPress={() => router.push("/profile")}>
                 Add them in your profile
               </Text>
@@ -215,17 +220,26 @@ const DetailsScreen = () => {
             </Text>
           )}
           <Text style={styles.attribution}>
-            Streaming data by JustWatch, via TMDB.
+            Data provided by JustWatch. Movie information from TMDB.
           </Text>
         </View>
 
         <MovieRow
-          heading="More like this"
-          subheading="Similar genres, on your services"
-          data={similar.data}
+          heading="Similar on your services"
+          subheading={`Suggested by TMDB, streaming in ${regionName(region)}`}
+          data={similar.data?.onMyServices}
           loading={similar.isPending}
           error={similar.error}
           onRetry={similar.refetch}
+        />
+        <MovieRow
+          heading={
+            similar.data?.onMyServices.length
+              ? "More similar titles"
+              : "Similar titles"
+          }
+          subheading="Suggested by TMDB, not on your services"
+          data={similar.data?.others}
         />
       </ScrollView>
     </SafeAreaView>
@@ -265,7 +279,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surface,
   },
   favActive: {
-    borderColor: "red",
+    borderColor: Colors.primary,
   },
   favText: {
     color: Colors.text,
@@ -338,6 +352,9 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     marginTop: 24,
     marginBottom: 12,
+  },
+  regionPicker: {
+    marginBottom: 14,
   },
   subTitle: {
     color: Colors.gray,
