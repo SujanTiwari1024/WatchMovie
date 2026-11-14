@@ -5,7 +5,9 @@ import {
   isStreamingOn,
   mergeByPopularity,
   mergeUniqueTitles,
+  sortTitles,
   streamingEntries,
+  filterByTitle,
 } from "../utils/filtering";
 
 const title = (key: string, popularity = 1): TitleSummary => ({
@@ -103,5 +105,38 @@ describe("merging titles", () => {
       [title("movie-1")],
     );
     expect(remaining.map((t) => t.key)).toEqual(["movie-2"]);
+  });
+});
+
+describe("filterByTitle", () => {
+  const list = [
+    { ...title("movie-1"), title: "The Dark Knight" },
+    { ...title("movie-2"), title: "Inception" },
+  ];
+
+  it("matches part of a title, ignoring case and spaces", () => {
+    expect(filterByTitle(list, "  dark ").map((t) => t.key)).toEqual([
+      "movie-1",
+    ]);
+  });
+
+  it("returns everything for an empty query", () => {
+    expect(filterByTitle(list, "")).toHaveLength(2);
+  });
+});
+
+describe("sortTitles", () => {
+  const list = [
+    { ...title("movie-1", 5), year: 2010, rating: 8 },
+    { ...title("movie-2", 9), year: 2001, rating: 6 },
+    { ...title("movie-3", 1), year: 2024, rating: 9 },
+  ];
+
+  it("sorts by popularity, year or rating", () => {
+    const keys = (sort: "popular" | "newest" | "rating") =>
+      sortTitles(list, sort).map((t) => t.key);
+    expect(keys("popular")).toEqual(["movie-2", "movie-1", "movie-3"]);
+    expect(keys("newest")).toEqual(["movie-3", "movie-1", "movie-2"]);
+    expect(keys("rating")).toEqual(["movie-3", "movie-1", "movie-2"]);
   });
 });

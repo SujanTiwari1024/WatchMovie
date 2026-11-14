@@ -126,7 +126,14 @@ export const fetchSearch = async (query: string) => {
   return toPage(data).results;
 };
 
-export const fetchRelated = async (mediaType: MediaType, id: number) => {
+export const fetchSearchByType = async (mediaType: MediaType, query: string) => {
+  const { data } = await tmdb.get(`/search/${mediaType}`, {
+    params: { query, include_adult: false },
+  });
+  return toPage(data, mediaType).results;
+};
+
+export const fetchRelated =async (mediaType: MediaType, id: number) => {
   const [recommendations, similar] = await Promise.all([
     tmdb.get(`/${mediaType}/${id}/recommendations`),
     tmdb.get(`/${mediaType}/${id}/similar`),

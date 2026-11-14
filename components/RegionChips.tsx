@@ -35,8 +35,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   region: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
     borderRadius: 20,
     borderWidth: 1,
     borderColor: Colors.darkBorder,

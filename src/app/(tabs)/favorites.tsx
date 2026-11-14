@@ -6,10 +6,11 @@ const FavoritesScreen = () => {
   const { favorites } = useUserData();
   return (
     <LibraryScreen
-      heading="Watchlist"
+      heading="Up Next"
       data={favorites}
       emptyIcon="bookmark-outline"
-      emptyText="Your watchlist is empty. Open any title and tap Add to watchlist."
+      countSuffix="you'd like to watch"
+      emptyText="Nothing in Up Next yet. Open any title and tap Add to watchlist."
     />
   );
 };

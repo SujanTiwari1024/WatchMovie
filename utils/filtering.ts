@@ -31,6 +31,23 @@ export const mergeUniqueTitles = (...lists: TitleSummary[][]) => {
 export const mergeByPopularity = (...lists: TitleSummary[][]) =>
   mergeUniqueTitles(...lists).sort((a, b) => b.popularity - a.popularity);
 
+export const filterByTitle = (titles: TitleSummary[], query: string) => {
+  const needle = query.trim().toLowerCase();
+  if (!needle) return titles;
+  return titles.filter((title) => title.title.toLowerCase().includes(needle));
+};
+
+export type SortOption = "popular" | "newest" | "rating";
+
+export const sortTitles = (titles: TitleSummary[], sort: SortOption) =>
+  [...titles].sort((a, b) =>
+    sort === "newest"
+      ? (b.year ?? 0) - (a.year ?? 0)
+      : sort === "rating"
+        ? b.rating - a.rating
+        : b.popularity - a.popularity,
+  );
+
 export const excludeTitles = (
   titles: TitleSummary[],
   excluded: TitleSummary[],

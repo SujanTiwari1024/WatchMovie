@@ -1,9 +1,10 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import React from "react";
+import React, { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Colors from "../constants/colors";
 import { TitleSummary } from "../api/types";
+import { filterByTitle } from "../utils/filtering";
 import AppHeader from "./AppHeader";
 import TitleGrid from "./TitleGrid";
 
@@ -12,6 +13,7 @@ interface LibraryScreenProps {
   data: TitleSummary[];
   emptyIcon: React.ComponentProps<typeof Ionicons>["name"];
   emptyText: string;
+  countSuffix: string;
 }
 
 const LibraryScreen = ({
@@ -19,26 +21,43 @@ const LibraryScreen = ({
   data,
   emptyIcon,
   emptyText,
+  countSuffix,
 }: LibraryScreenProps) => {
+  const [query, setQuery] = useState("");
+  const results = filterByTitle(data, query);
+  const trimmed = query.trim();
+  const plural = (n: number, word: string, many = `${word}s`) =>
+    `${n} ${n === 1 ? word : many}`;
+  const placeholder =
+    data.length > 0
+      ? `Search among ${plural(data.length, "title")} ${countSuffix}`
+      : `Search ${heading}`;
+
   return (
     <SafeAreaView edges={["top"]} style={styles.container}>
-      <AppHeader />
+      <AppHeader
+        searchLabel={placeholder}
+        searchValue={query}
+        onSearchChange={setQuery}
+      />
       {data.length === 0 ? (
-        <>
-          <Text style={styles.heading}>{heading}</Text>
-          <View style={styles.empty}>
-            <Ionicons name={emptyIcon} size={48} color={Colors.gray} />
-            <Text style={styles.emptyText}>{emptyText}</Text>
-          </View>
-        </>
+        <View style={styles.empty}>
+          <Ionicons name={emptyIcon} size={48} color={Colors.gray} />
+          <Text style={styles.emptyText}>{emptyText}</Text>
+        </View>
       ) : (
         <TitleGrid
           columns={2}
-          data={data}
+          data={results}
+          emptyText={`Nothing in ${heading} matches "${trimmed}".`}
           header={
-            <Text style={styles.heading}>
-              {heading} <Text style={styles.count}>({data.length})</Text>
-            </Text>
+            trimmed && results.length > 0 ? (
+              <Text style={styles.matches}>
+                {plural(results.length, "match", "matches")} for "{trimmed}"
+              </Text>
+            ) : (
+              <View style={{ height: 6 }} />
+            )
           }
         />
       )}
@@ -53,16 +72,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
-  heading: {
-    color: Colors.text,
-    fontSize: 28,
-    fontWeight: "700",
-    padding: 14,
-  },
-  count: {
+  matches: {
     color: Colors.gray,
-    fontSize: 20,
-    fontWeight: "500",
+    fontSize: 13,
+    paddingHorizontal: 14,
+    paddingTop: 4,
   },
   empty: {
     alignItems: "center",

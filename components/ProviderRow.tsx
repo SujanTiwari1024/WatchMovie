@@ -45,17 +45,18 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
     borderRadius: 14,
     backgroundColor: Colors.surface,
     borderWidth: 1,
     borderColor: Colors.darkBorder,
-    marginBottom: 10,
+    marginBottom: 8,
     gap: 12,
   },
   badge: {
-    height: 38,
-    width: 38,
+    height: 34,
+    width: 34,
     borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
@@ -77,8 +78,8 @@ const styles = StyleSheet.create({
   },
   watch: {
     backgroundColor: Colors.primary,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
     borderRadius: 10,
   },
   watchText: {

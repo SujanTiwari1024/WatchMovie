@@ -9,6 +9,7 @@ const WatchedScreen = () => {
       heading="Watched"
       data={watched}
       emptyIcon="checkmark-circle-outline"
+      countSuffix="you've watched"
       emptyText="Nothing marked as watched yet. Open a title and tap Mark as watched."
     />
   );

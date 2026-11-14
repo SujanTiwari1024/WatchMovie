@@ -46,12 +46,9 @@ const OverviewSection = ({ featured }: OverviewSectionProps) => {
               onPress={() => router.push("/profile")}
             >
               <Image style={styles.profile} source={profilePhoto} />
-              <View style={{ marginLeft: 8 }}>
-                <Text style={styles.greet}>Hi, {username}</Text>
-                <Text style={{ color: Colors.overlayText, fontSize: 16 }}>
-                  Welcome back!
-                </Text>
-              </View>
+              <Text style={[styles.greet, { marginLeft: 8 }]}>
+                Hi, {username}
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.searchWrapper}
@@ -102,7 +99,12 @@ const OverviewSection = ({ featured }: OverviewSectionProps) => {
               style={styles.playbtn}
               onPress={openDetails}
             >
-              <Ionicons name="play" size={24} color={Colors.white} />
+              <Ionicons
+                name="play"
+                size={24}
+                color={Colors.white}
+                style={{ marginLeft: 3 }}
+              />
             </TouchableOpacity>
           </LinearGradient>
         )}

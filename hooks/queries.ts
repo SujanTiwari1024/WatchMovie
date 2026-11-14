@@ -6,6 +6,7 @@ import {
   fetchGenres,
   fetchRelated,
   fetchSearch,
+  fetchSearchByType,
   fetchTrending,
   fetchWatchProviders,
 } from "../api/tmdb";
@@ -16,6 +17,8 @@ import {
   isStreamingOn,
   mergeByPopularity,
   mergeUniqueTitles,
+  SortOption,
+  sortTitles,
 } from "../utils/filtering";
 
 const HOUR = 60 * 60 * 1000;
@@ -151,6 +154,37 @@ export const useDetails = (key: string) =>
     queryKey: ["details", key],
     queryFn: () => fetchDetails(key),
     staleTime: 6 * HOUR,
+  });
+
+interface BrowseSearchInput {
+  mediaType: MediaType;
+  query: string;
+  region: RegionCode;
+  genreIds: number[];
+  providerIds: number[];
+  sort: SortOption;
+}
+
+export const useBrowseSearch = (input: BrowseSearchInput) =>
+  useQuery({
+    queryKey: ["browse-search", input],
+    enabled: input.query.length >= 2,
+    queryFn: async () => {
+      const found = await fetchSearchByType(input.mediaType, input.query);
+      let results = found.filter((title) =>
+        input.genreIds.every((id) => title.genreIds.includes(id)),
+      );
+      if (input.providerIds.length > 0) {
+        const split = await splitByServices(
+          results,
+          input.region,
+          input.providerIds,
+        );
+        results = split.onMyServices;
+      }
+      return sortTitles(results, input.sort);
+    },
+    staleTime: HOUR,
   });
 
 export const useSearch = (query: string) =>

@@ -5,13 +5,13 @@ import { MediaType } from "../api/types";
 import Colors from "../constants/colors";
 import { ProviderId, providers, tmdbIdsFor } from "../constants/providers";
 import { useUserData } from "../context/UserDataContext";
-import { useDiscover, useGenres } from "../hooks/queries";
+import { useBrowseSearch, useDiscover, useGenres } from "../hooks/queries";
+import { useDebounce } from "../hooks/useDebounce";
+import { SortOption } from "../utils/filtering";
 import AppHeader from "./AppHeader";
 import GenreChips from "./GenreChips";
 import ServiceChips from "./ServiceChips";
 import TitleGrid from "./TitleGrid";
-
-type SortOption = "popular" | "newest" | "rating";
 
 const sortLabels: Record<SortOption, string> = {
   popular: "Popular",
@@ -26,6 +26,8 @@ interface BrowseScreenProps {
 
 const BrowseScreen = ({ mediaType, heading }: BrowseScreenProps) => {
   const { region } = useUserData();
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [text, setText] = useState("");
   const [genre, setGenre] = useState("All");
   const [sort, setSort] = useState<SortOption>("popular");
   const [selectedServices, setSelectedServices] = useState<ProviderId[]>([]);
@@ -33,66 +35,114 @@ const BrowseScreen = ({ mediaType, heading }: BrowseScreenProps) => {
     providers[id].regions.includes(region),
   );
 
+  const debounced = useDebounce(text.trim());
+  const searching = searchOpen && debounced.length >= 2;
+
+  const closeSearch = () => {
+    setSearchOpen(false);
+    setText("");
+    setGenre("All");
+    setSort("popular");
+    setSelectedServices([]);
+  };
+
   const genres = useGenres(mediaType);
   const genreId = genres.data?.find((g) => g.name === genre)?.id;
+  const genreIds = genreId ? [genreId] : [];
+  const providerIds = tmdbIdsFor(activeServices, region);
 
-  const query = useDiscover({
+  const discover = useDiscover({
     mediaType,
     region,
     sort,
-    genreIds: genreId ? [genreId] : [],
-    providerIds: tmdbIdsFor(activeServices, region),
+    genreIds,
+    providerIds,
+  });
+  const search = useBrowseSearch({
+    mediaType,
+    region,
+    sort,
+    genreIds,
+    providerIds,
+    query: searching ? debounced : "",
   });
 
-  const data = query.data?.pages.flatMap((p) => p.results) ?? [];
-  const unique = [...new Map(data.map((t) => [t.key, t])).values()];
+  const discovered = discover.data?.pages.flatMap((p) => p.results) ?? [];
+  const unique = [...new Map(discovered.map((t) => [t.key, t])).values()];
+  const label = heading.toLowerCase();
 
   return (
     <SafeAreaView edges={["top"]} style={styles.container}>
-      <AppHeader />
+      {searchOpen ? (
+        <AppHeader
+          autoFocus
+          searchLabel={`Search ${label}`}
+          searchValue={text}
+          onSearchChange={setText}
+          onSearchClose={closeSearch}
+        />
+      ) : (
+        <AppHeader
+          searchLabel={`Search ${label}`}
+          onSearchPress={() => setSearchOpen(true)}
+        />
+      )}
       <TitleGrid
-        data={unique}
-        loading={query.isPending}
-        error={query.error}
-        onRetry={query.refetch}
-        loadingMore={query.isFetchingNextPage}
+        data={searching ? (search.data ?? []) : unique}
+        loading={searching ? search.isPending : discover.isPending}
+        error={searching ? search.error : discover.error}
+        onRetry={searching ? search.refetch : discover.refetch}
+        loadingMore={!searching && discover.isFetchingNextPage}
         onEndReached={() =>
-          query.hasNextPage &&
-          !query.isFetchingNextPage &&
-          query.fetchNextPage()
+          !searching &&
+          discover.hasNextPage &&
+          !discover.isFetchingNextPage &&
+          discover.fetchNextPage()
         }
-        emptyText={`No ${heading.toLowerCase()} match these filters. Try another genre or service.`}
+        emptyText={
+          searching
+            ? `No ${label} match "${debounced}" with these filters.`
+            : `No ${label} match these filters. Try another genre or service.`
+        }
         header={
-          <View style={{ marginBottom: 14 }}>
-            <Text style={styles.heading}>{heading}</Text>
-            <GenreChips
-              genres={(genres.data ?? []).map((g) => g.name)}
-              selected={genre}
-              onSelect={setGenre}
-            />
-            {genres.isError && (
-              <Text style={styles.genreError} onPress={() => genres.refetch()}>
-                Genres could not be loaded. Tap to try again.
-              </Text>
-            )}
-            <View style={{ marginTop: 10 }}>
-              <ServiceChips
-                selected={activeServices}
-                onChange={setSelectedServices}
-              />
+          searchOpen ? (
+            <View style={styles.filters}>
+              <>
+                <GenreChips
+                  genres={(genres.data ?? []).map((g) => g.name)}
+                  selected={genre}
+                  onSelect={setGenre}
+                />
+                {genres.isError && (
+                  <Text
+                    style={styles.genreError}
+                    onPress={() => genres.refetch()}
+                  >
+                    Genres could not be loaded. Tap to try again.
+                  </Text>
+                )}
+                <View style={{ marginTop: 10 }}>
+                  <ServiceChips
+                    selected={activeServices}
+                    onChange={setSelectedServices}
+                  />
+                </View>
+                <View style={styles.optionsRow}>
+                  {(Object.keys(sortLabels) as SortOption[]).map((s) => (
+                    <Text
+                      key={s}
+                      onPress={() => setSort(s)}
+                      style={[styles.sort, sort === s && styles.sortActive]}
+                    >
+                      {sortLabels[s]}
+                    </Text>
+                  ))}
+                </View>
+              </>
             </View>
-            <View style={styles.optionsRow}>
-              {(Object.keys(sortLabels) as SortOption[]).map((s) => (
-                <Text
-                  key={s}
-                  onPress={() => setSort(s)}
-                  style={[styles.sort, sort === s && styles.sortActive]}
-                >
-                  {sortLabels[s]}
-                </Text>
-              ))}
-            </View>
-          </View>
+          ) : (
+            <View style={{ height: 6 }} />
+          )
         }
       />
     </SafeAreaView>
@@ -106,11 +156,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
-  heading: {
-    color: Colors.text,
-    fontSize: 28,
-    fontWeight: "700",
-    padding: 14,
+  filters: {
+    marginTop: 6,
+    marginBottom: 14,
   },
   genreError: {
     color: Colors.primary,

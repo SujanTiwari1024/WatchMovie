@@ -2,7 +2,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React from "react";
+import React, { useState } from "react";
 import {
   ScrollView,
   Share,
@@ -55,6 +55,7 @@ const DetailsScreen = () => {
     tmdbIdsFor(myServices, region),
   );
   const item = details.data;
+  const [expanded, setExpanded] = useState(false);
 
   if (!item) {
     return (
@@ -84,17 +85,15 @@ const DetailsScreen = () => {
           <Text style={styles.title}>{item.title}</Text>
           <TouchableOpacity
             activeOpacity={0.8}
-            style={[styles.favButton, favorite && styles.favActive]}
-            onPress={() => toggleFavorite(item)}
+            style={styles.shareButton}
+            onPress={() => shareTitle(item, streamingOn)}
           >
             <Ionicons
-              name={favorite ? "bookmark" : "bookmark-outline"}
+              name="share-social-outline"
               size={16}
-              color={favorite ? Colors.primary : Colors.text}
+              color={Colors.text}
             />
-            <Text style={styles.favText}>
-              {favorite ? "On watchlist" : "Add to watchlist"}
-            </Text>
+            <Text style={styles.shareText}>Share</Text>
           </TouchableOpacity>
         </View>
 
@@ -117,7 +116,12 @@ const DetailsScreen = () => {
             <Text style={styles.ratingText}>{item.rating.toFixed(1)}</Text>
           </View>
           <View style={styles.play}>
-            <Ionicons name="play" size={30} color={Colors.white} />
+            <Ionicons
+              name="play"
+              size={30}
+              color={Colors.white}
+              style={{ marginLeft: 4 }}
+            />
           </View>
           <Text style={styles.trailerText}>
             {item.trailerKey ? "Watch trailer" : "Search trailer"}
@@ -135,11 +139,22 @@ const DetailsScreen = () => {
               .filter(Boolean)
               .join(" | ")}
           </Text>
-          <Text style={styles.description}>
+          <Text
+            style={styles.description}
+            numberOfLines={expanded ? undefined : 3}
+            onPress={() => setExpanded((e) => !e)}
+          >
             {item.overview || "No description available."}
           </Text>
+          {item.overview.length > 160 && (
+            <Text style={styles.more} onPress={() => setExpanded((e) => !e)}>
+              {expanded ? "Show less" : "Read more"}
+            </Text>
+          )}
           {item.cast.length > 0 && (
-            <Text style={styles.cast}>Cast: {item.cast.join(", ")}</Text>
+            <Text style={styles.cast} numberOfLines={expanded ? undefined : 1}>
+              Cast: {item.cast.join(", ")}
+            </Text>
           )}
 
           <View style={styles.actions}>
@@ -154,20 +169,28 @@ const DetailsScreen = () => {
                   color={watched ? Colors.primary : Colors.text}
                 />
               }
-              style={{ flex: 1 }}
+              style={[
+                styles.actionButton,
+                { marginRight: 10 },
+                watched && styles.actionActive,
+              ]}
               onPress={() => toggleWatched(item)}
             />
             <AppButton
-              title="Share"
+              title={favorite ? "On watchlist" : "Add to watchlist"}
               icon={
                 <Ionicons
-                  name="share-social-outline"
+                  name={favorite ? "bookmark" : "bookmark-outline"}
                   size={16}
-                  color={Colors.text}
+                  color={favorite ? Colors.primary : Colors.text}
                 />
               }
-              style={{ flex: 1, marginRight: 0 }}
-              onPress={() => shareTitle(item, streamingOn)}
+              style={[
+                styles.actionButton,
+                { marginRight: 0 },
+                favorite && styles.actionActive,
+              ]}
+              onPress={() => toggleFavorite(item)}
             />
           </View>
 
@@ -219,9 +242,6 @@ const DetailsScreen = () => {
               )}
             </Text>
           )}
-          <Text style={styles.attribution}>
-            Data provided by JustWatch. Movie information from TMDB.
-          </Text>
         </View>
 
         <MovieRow
@@ -241,6 +261,9 @@ const DetailsScreen = () => {
           subheading="Suggested by TMDB, not on your services"
           data={similar.data?.others}
         />
+        <Text style={styles.attribution}>
+          Data provided by JustWatch. Movie information from TMDB.
+        </Text>
       </ScrollView>
     </SafeAreaView>
   );
@@ -258,16 +281,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 14,
-    marginTop: 10,
+    marginTop: 4,
     gap: 10,
   },
   title: {
     flex: 1,
     color: Colors.text,
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: "700",
   },
-  favButton: {
+  shareButton: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
@@ -278,18 +301,27 @@ const styles = StyleSheet.create({
     borderColor: Colors.darkBorder,
     backgroundColor: Colors.surface,
   },
-  favActive: {
-    borderColor: Colors.primary,
-  },
-  favText: {
+  shareText: {
     color: Colors.text,
     fontWeight: "500",
     fontSize: 13,
   },
+  actionButton: {
+    flex: 1,
+    height: 42,
+  },
+  actionActive: {
+    borderColor: Colors.primary,
+  },
+  more: {
+    color: Colors.primary,
+    fontWeight: "600",
+    marginTop: 4,
+  },
   trailer: {
-    height: 210,
+    height: 180,
     marginHorizontal: 14,
-    marginTop: 14,
+    marginTop: 10,
     borderRadius: 16,
     overflow: "hidden",
     alignItems: "center",
@@ -326,7 +358,8 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   body: {
-    padding: 14,
+    paddingHorizontal: 14,
+    paddingTop: 12,
   },
   meta: {
     color: Colors.gray,
@@ -334,27 +367,27 @@ const styles = StyleSheet.create({
   },
   description: {
     color: Colors.text,
-    lineHeight: 21,
-    marginTop: 10,
+    lineHeight: 20,
+    marginTop: 6,
   },
   cast: {
     color: Colors.gray,
-    marginTop: 8,
-    lineHeight: 20,
+    marginTop: 6,
+    lineHeight: 18,
   },
   actions: {
     flexDirection: "row",
-    marginTop: 18,
+    marginTop: 12,
   },
   sectionTitle: {
     color: Colors.text,
     fontSize: 18,
     fontWeight: "700",
-    marginTop: 24,
-    marginBottom: 12,
+    marginTop: 18,
+    marginBottom: 8,
   },
   regionPicker: {
-    marginBottom: 14,
+    marginBottom: 10,
   },
   subTitle: {
     color: Colors.gray,
@@ -373,6 +406,7 @@ const styles = StyleSheet.create({
   attribution: {
     color: Colors.gray,
     fontSize: 11,
-    marginTop: 6,
+    marginTop: 18,
+    paddingHorizontal: 14,
   },
 });

@@ -59,6 +59,8 @@ const TitleGrid = ({
           <ActivityIndicator color={Colors.primary} style={{ margin: 20 }} />
         ) : undefined
       }
+      keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="on-drag"
       onEndReached={onEndReached}
       onEndReachedThreshold={0.6}
       columnWrapperStyle={{ gap: GAP, paddingHorizontal: PADDING }}

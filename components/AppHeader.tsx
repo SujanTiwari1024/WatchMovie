@@ -1,44 +1,78 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useRouter } from "expo-router";
 import React from "react";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import Colors from "../constants/colors";
-import { profilePhoto } from "../constants/images";
-import { useUserData } from "../context/UserDataContext";
 
 interface AppHeaderProps {
   showBack?: boolean;
+  searchLabel?: string;
+  onSearchPress?: () => void;
+  searchValue?: string;
+  onSearchChange?: (text: string) => void;
+  onSearchClose?: () => void;
+  autoFocus?: boolean;
 }
 
-const AppHeader = ({ showBack }: AppHeaderProps) => {
+const AppHeader = ({
+  showBack,
+  searchLabel = "Search",
+  onSearchPress,
+  searchValue,
+  onSearchChange,
+  onSearchClose,
+  autoFocus,
+}: AppHeaderProps) => {
   const router = useRouter();
-  const { username } = useUserData();
+  const showClear = !!onSearchClose || !!searchValue;
 
   return (
     <View style={styles.header}>
       {showBack && (
-        <TouchableOpacity style={styles.logo} onPress={() => router.back()}>
+        <TouchableOpacity style={styles.back} onPress={() => router.back()}>
           <Ionicons name="chevron-back" size={24} color={Colors.text} />
         </TouchableOpacity>
       )}
-      <TouchableOpacity
-        activeOpacity={0.8}
-        style={styles.search}
-        onPress={() => router.push("/search")}
-      >
-        <Ionicons name="search" size={16} color={Colors.gray} />
-        <Text style={styles.searchText}>Search</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        activeOpacity={0.8}
-        style={styles.greet}
-        onPress={() => router.push("/profile")}
-      >
-        <Image source={profilePhoto} style={styles.avatar} />
-        <Text numberOfLines={1} style={styles.greetText}>
-          Hi, {username}
-        </Text>
-      </TouchableOpacity>
+      {onSearchChange ? (
+        <View style={[styles.search, styles.searchInputWrapper]}>
+          <Ionicons name="search" size={16} color={Colors.gray} />
+          <TextInput
+            style={styles.input}
+            value={searchValue}
+            onChangeText={onSearchChange}
+            placeholder={searchLabel}
+            placeholderTextColor={Colors.gray}
+            autoFocus={autoFocus}
+            autoCorrect={false}
+            returnKeyType="search"
+          />
+          {showClear && (
+            <TouchableOpacity
+              hitSlop={10}
+              onPress={() =>
+                onSearchClose ? onSearchClose() : onSearchChange("")
+              }
+            >
+              <Ionicons name="close-circle" size={18} color={Colors.gray} />
+            </TouchableOpacity>
+          )}
+        </View>
+      ) : (
+        <TouchableOpacity
+          activeOpacity={0.8}
+          style={styles.search}
+          onPress={onSearchPress ?? (() => router.push("/search"))}
+        >
+          <Ionicons name="search" size={16} color={Colors.gray} />
+          <Text style={styles.searchText}>{searchLabel}</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 };
@@ -53,9 +87,9 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     gap: 10,
   },
-  logo: {
-    height: 42,
-    width: 42,
+  back: {
+    height: 40,
+    width: 40,
     borderRadius: 12,
     backgroundColor: Colors.surface,
     alignItems: "center",
@@ -73,32 +107,18 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 6,
   },
+  searchInputWrapper: {
+    justifyContent: "flex-start",
+    paddingHorizontal: 14,
+  },
   searchText: {
     color: Colors.gray,
     fontWeight: "600",
   },
-  greet: {
-    height: 40,
-    maxWidth: 150,
-    paddingLeft: 4,
-    paddingRight: 14,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    borderRadius: 20,
-    backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.darkBorder,
-    justifyContent: "center",
-  },
-  avatar: {
-    height: 32,
-    width: 32,
-    borderRadius: 16,
-  },
-  greetText: {
-    flexShrink: 1,
+  input: {
+    flex: 1,
+    height: "100%",
     color: Colors.text,
-    fontWeight: "500",
+    paddingVertical: 0,
   },
 });

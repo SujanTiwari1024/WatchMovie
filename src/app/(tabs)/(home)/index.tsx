@@ -92,7 +92,7 @@ const HomeScreen = () => {
           error={trending.error}
           onRetry={trending.refetch}
         />
-        <MovieRow heading="Watchlist" data={favorites} />
+        <MovieRow heading="Up Next" data={favorites} />
         {regionalServices.map((id) => (
           <ProviderTopRow key={id} id={id} />
         ))}
