@@ -3,7 +3,8 @@ import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
+import Text from "./AppText";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { imageUrl } from "../api/tmdb";
 import { TitleSummary } from "../api/types";
@@ -11,6 +12,7 @@ import Colors from "../constants/colors";
 import { profilePhoto } from "../constants/images";
 import { useUserData } from "../context/UserDataContext";
 import { useGenreNames } from "../hooks/queries";
+import { useHeroHeight } from "../hooks/useScreenLayout";
 
 interface OverviewSectionProps {
   featured?: TitleSummary;
@@ -20,12 +22,13 @@ const OverviewSection = ({ featured }: OverviewSectionProps) => {
   const router = useRouter();
   const { username } = useUserData();
   const genreNames = useGenreNames();
+  const heroHeight = useHeroHeight();
   const openDetails = () =>
     featured &&
     router.push({ pathname: "/details/[id]", params: { id: featured.key } });
 
   return (
-    <View style={styles.overview}>
+    <View style={[styles.overview, { height: heroHeight }]}>
       <Image
         style={styles.overviewImage}
         source={imageUrl(
@@ -117,7 +120,6 @@ export default OverviewSection;
 
 const styles = StyleSheet.create({
   overview: {
-    height: 400,
     position: "relative",
     backgroundColor: Colors.surface,
   },

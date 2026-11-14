@@ -1,11 +1,6 @@
 import React from "react";
-import {
-  ActivityIndicator,
-  FlatList,
-  StyleSheet,
-  Text,
-  useWindowDimensions,
-} from "react-native";
+import { ActivityIndicator, FlatList, StyleSheet, useWindowDimensions } from "react-native";
+import Text from "./AppText";
 import { TitleSummary } from "../api/types";
 import Colors from "../constants/colors";
 import MovieCard from "./MovieCard";

@@ -1,6 +1,7 @@
 import { Image } from "expo-image";
 import React from "react";
-import { ScrollView, StyleSheet, Text, TouchableOpacity } from "react-native";
+import { ScrollView, StyleSheet, TouchableOpacity } from "react-native";
+import Text from "./AppText";
 import { imageUrl } from "../api/tmdb";
 import Colors from "../constants/colors";
 import { ProviderId, providersInRegion } from "../constants/providers";

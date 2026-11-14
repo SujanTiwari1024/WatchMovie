@@ -83,7 +83,7 @@ const HomeScreen = () => {
               ? "Add your streaming services in your profile to get suggestions."
               : "Nothing matching on your services right now."
           }
-          cardWidth={160}
+          visibleCards={2.4}
         />
         <MovieRow
           heading="Top Trending"

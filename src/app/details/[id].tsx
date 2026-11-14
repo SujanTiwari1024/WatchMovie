@@ -3,14 +3,8 @@ import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
-import {
-  ScrollView,
-  Share,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { ScrollView, Share, StyleSheet, TouchableOpacity, View } from "react-native";
+import Text from "../../../components/AppText";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { imageUrl } from "../../../api/tmdb";
 import { TitleDetails } from "../../../api/types";
@@ -30,7 +24,10 @@ import {
   openTrailer,
 } from "../../../utils/streaming";
 
-const shareTitle = (item: TitleDetails, where: string[]) =>
+const DESCRIPTION_LINES = 3;
+const CAST_LINES = 1;
+
+const shareTitle =(item: TitleDetails, where: string[]) =>
   Share.share({
     message:
       `Let's watch "${item.title}"${item.year ? ` (${item.year})` : ""}! ` +
@@ -56,6 +53,8 @@ const DetailsScreen = () => {
   );
   const item = details.data;
   const [expanded, setExpanded] = useState(false);
+  const [descriptionLines, setDescriptionLines] = useState(0);
+  const [castLines, setCastLines] = useState(0);
 
   if (!item) {
     return (
@@ -69,6 +68,12 @@ const DetailsScreen = () => {
       </SafeAreaView>
     );
   }
+
+  const overview = item.overview || "No description available.";
+  const castText = `Cast: ${item.cast.join(", ")}`;
+  const canExpand =
+    descriptionLines > DESCRIPTION_LINES || castLines > CAST_LINES;
+  const toggleExpanded = () => setExpanded((e) => !e);
 
   const favorite = isFavorite(item.key);
   const watched = isWatched(item.key);
@@ -139,22 +144,57 @@ const DetailsScreen = () => {
               .filter(Boolean)
               .join(" | ")}
           </Text>
-          <Text
-            style={styles.description}
-            numberOfLines={expanded ? undefined : 3}
-            onPress={() => setExpanded((e) => !e)}
-          >
-            {item.overview || "No description available."}
-          </Text>
-          {item.overview.length > 160 && (
-            <Text style={styles.more} onPress={() => setExpanded((e) => !e)}>
+          <View>
+            <Text
+              style={styles.description}
+              numberOfLines={expanded ? undefined : DESCRIPTION_LINES}
+              onPress={canExpand ? toggleExpanded : undefined}
+            >
+              {overview}
+            </Text>
+            <View
+              style={styles.measure}
+              pointerEvents="none"
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+            >
+              <Text
+                style={styles.description}
+                onTextLayout={(e) =>
+                  setDescriptionLines(e.nativeEvent.lines.length)
+                }
+              >
+                {overview}
+              </Text>
+            </View>
+          </View>
+          {canExpand && (
+            <Text style={styles.more} onPress={toggleExpanded}>
               {expanded ? "Show less" : "Read more"}
             </Text>
           )}
           {item.cast.length > 0 && (
-            <Text style={styles.cast} numberOfLines={expanded ? undefined : 1}>
-              Cast: {item.cast.join(", ")}
-            </Text>
+            <View>
+              <Text
+                style={styles.cast}
+                numberOfLines={expanded ? undefined : CAST_LINES}
+              >
+                {castText}
+              </Text>
+              <View
+                style={styles.measure}
+                pointerEvents="none"
+                accessibilityElementsHidden
+                importantForAccessibility="no-hide-descendants"
+              >
+                <Text
+                  style={styles.cast}
+                  onTextLayout={(e) => setCastLines(e.nativeEvent.lines.length)}
+                >
+                  {castText}
+                </Text>
+              </View>
+            </View>
           )}
 
           <View style={styles.actions}>
@@ -312,6 +352,13 @@ const styles = StyleSheet.create({
   },
   actionActive: {
     borderColor: Colors.primary,
+  },
+  measure: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    opacity: 0,
   },
   more: {
     color: Colors.primary,

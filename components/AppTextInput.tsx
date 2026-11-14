@@ -1,11 +1,16 @@
 import React from "react";
 import { StyleSheet, TextInput, TextInputProps, View } from "react-native";
 import Colors from "../constants/colors";
+import { MAX_FONT_SCALE } from "./AppText";
 
 const AppTextInput: React.FC<TextInputProps> = ({ ...props }) => {
   return (
     <View style={styles.wrapper}>
-      <TextInput {...props} style={styles.input} />
+      <TextInput
+        maxFontSizeMultiplier={MAX_FONT_SCALE}
+        {...props}
+        style={styles.input}
+      />
     </View>
   );
 };

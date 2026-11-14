@@ -1,6 +1,7 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import React, { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import Text from "./AppText";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Colors from "../constants/colors";
 import { TitleSummary } from "../api/types";

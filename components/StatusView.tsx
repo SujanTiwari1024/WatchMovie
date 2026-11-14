@@ -1,12 +1,7 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import React from "react";
-import {
-  ActivityIndicator,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { ActivityIndicator, StyleSheet, TouchableOpacity, View } from "react-native";
+import Text from "./AppText";
 import { errorMessage } from "../api/tmdb";
 import Colors from "../constants/colors";
 

@@ -2,13 +2,8 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Image } from "expo-image";
-import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import Text from "../../components/AppText";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AppTextInput from "../../components/AppTextInput";
 import RegionChips from "../../components/RegionChips";

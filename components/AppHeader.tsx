@@ -1,13 +1,8 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useRouter } from "expo-router";
 import React from "react";
-import {
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
+import Text, { MAX_FONT_SCALE } from "./AppText";
 import Colors from "../constants/colors";
 
 interface AppHeaderProps {
@@ -49,6 +44,7 @@ const AppHeader = ({
             placeholder={searchLabel}
             placeholderTextColor={Colors.gray}
             autoFocus={autoFocus}
+            maxFontSizeMultiplier={MAX_FONT_SCALE}
             autoCorrect={false}
             returnKeyType="search"
           />

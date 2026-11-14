@@ -3,6 +3,7 @@ import { Tabs } from "expo-router";
 import React from "react";
 import { ColorValue, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Text from "../../../components/AppText";
 import Colors from "../../../constants/colors";
 
 type IconName = React.ComponentProps<typeof Ionicons>["name"];
@@ -76,7 +77,9 @@ const TabLayout = () => {
           key={tab.name}
           name={tab.name}
           options={{
-            tabBarLabel: tab.label,
+            tabBarLabel: ({ color }) => (
+              <Text style={[styles.tabLabel, { color }]}>{tab.label}</Text>
+            ),
             tabBarIcon: ({ focused, color }) => (
               <TabIcon
                 focused={focused}

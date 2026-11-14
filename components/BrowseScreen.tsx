@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import Text from "./AppText";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MediaType } from "../api/types";
 import Colors from "../constants/colors";
